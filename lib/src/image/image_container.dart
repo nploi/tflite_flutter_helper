@@ -24,13 +24,19 @@ class ImageContainer extends BaseImageContainer {
 
   @override
   ColorSpaceType get colorSpaceType {
-    int len = _image.data.length;
     bool isGrayscale = true;
-    for (int i = (len / 4).floor(); i < _image.data.length; i++) {
-      if (_image.data[i] != 0) {
-        isGrayscale = false;
-        break;
+    for (int y = 0; y < _image.height; y++) {
+      for (int x = 0; x < _image.width; x++) {
+        final pixel = _image.getPixel(x, y);
+        final r = pixel.r;
+        final g = pixel.g;
+        final b = pixel.b;
+        if (r != g || g != b) {
+          isGrayscale = false;
+          break;
+        }
       }
+      if (!isGrayscale) break;
     }
     if (isGrayscale) {
       return ColorSpaceType.GRAYSCALE;
@@ -40,7 +46,7 @@ class ImageContainer extends BaseImageContainer {
   }
 
   @override
-  TensorBuffer getTensorBuffer(TfLiteType dataType) {
+  TensorBuffer getTensorBuffer(int dataType) {
     TensorBuffer buffer = TensorBuffer.createDynamic(dataType);
     ImageConversions.convertImageToTensorBuffer(image, buffer);
     return buffer;
